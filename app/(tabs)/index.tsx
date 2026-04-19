@@ -27,21 +27,42 @@ export default function HomeScreen() {
       title: "Hotel",
       amount: 15,
       category: "ការធ្វើដំណើរ",
-      date: "",
+      date: "2026-04-01",
     },
     {
       id: 2,
       title: "Foods",
       amount: 20,
       category: "អាហារ",
-      date: "",
+      date: "2026-04-01",
     },
     {
       id: 3,
       title: "Petro",
       amount: 30,
       category: "ការធ្វើដំណើរ",
-      date: "",
+      date: "2026-04-01",
+    },
+    {
+      id: 4,
+      title: "Hotel",
+      amount: 20,
+      category: "ការធ្វើដំណើរ",
+      date: "2026-04-19",
+    },
+    {
+      id: 5,
+      title: "Foods",
+      amount: 30,
+      category: "ការធ្វើដំណើរ",
+      date: "2026-04-19",
+    },
+    {
+      id: 6,
+      title: "Petro",
+      amount: 25,
+      category: "ការធ្វើដំណើរ",
+      date: "2026-04-19",
     },
   ]);
 
@@ -97,15 +118,27 @@ export default function HomeScreen() {
         </Pressable>
       </View>
 
-      <View style={{ height: 400 }}>
+      <View style={{ height: 400, marginTop: 12 }}>
         <FlatList
           data={expenses}
           keyExtractor={(item) => item.id.toString()}
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          ListEmptyComponent={
+            <Text style={{ textAlign: "center", marginTop: 20 }}>
+              មិនមានចំណាយទេ
+            </Text>
+          }
+          contentContainerStyle={{ paddingBottom: 20 }}
           renderItem={({ item }: { item: IExpense }) => (
-            <View>
-              <Text>{item.title}</Text>
-            </View>
+            <Pressable
+              style={home.expenseItem}
+            >
+              <View>
+                <Text style={home.expenseTitle}>{item.title}</Text>
+                <Text style={home.expenseCategory}>{item.category}</Text>
+              </View>
+              <Text style={home.expenseAmount}>${item.amount.toFixed(2)}</Text>
+            </Pressable>
           )}
         />
       </View>
@@ -115,7 +148,7 @@ export default function HomeScreen() {
           value={startDate || new Date()}
           mode="date"
           display="default"
-          onChange={(_, date) => {
+          onValueChange={(_, date) => {
             setShowStartPicker(false);
             if (date) {
               setStartDate(date);
@@ -128,7 +161,7 @@ export default function HomeScreen() {
           value={endedDate || new Date()}
           mode="date"
           display="default"
-          onChange={(_, date) => {
+          onValueChange={(_, date) => {
             setShowEndedPicker(false);
             if (date) {
               setEndedDate(date);
