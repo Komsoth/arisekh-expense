@@ -1,0 +1,13 @@
+import { Colors } from "@/constand/colors";
+import { Stack } from "expo-router";
+import { StatusBar } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function RootLayout() {
+  return (
+    <SafeAreaView style={{flex: 1, backgroundColor: Colors.primary}}>
+      <Stack screenOptions={{ headerShown: false }} />
+      <StatusBar barStyle="light-content" />
+    </SafeAreaView>
+  );
+}
