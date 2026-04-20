@@ -1,17 +1,22 @@
 import { Colors } from "@/constand/colors";
-import { StyleSheet } from "react-native";
+import { StyleSheet, TextInput } from "react-native";
 
-export const home = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 800,
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: 6,
     color: Colors.secondary,
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: "center",
+    color: "rgba(0,0,0,0.6)",
   },
   card: {
     backgroundColor: Colors.primary,
@@ -102,5 +107,49 @@ export const home = StyleSheet.create({
     fontSize: 16,
     fontWeight: 600,
     color: Colors.secondary,
+  },
+  inputTitle: {
+    fontSize: 16,
+    fontWeight: 600,
+    color: Colors.secondary,
+    marginBottom: 6,
+  },
+  inputText: {
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: Colors.gray,
+    borderRadius: 8,
+    padding: 10,
+    paddingVertical: 12,
+    paddingLeft: 12,
+    marginBottom: 10,
+  },
+  categoryTitle: {
+    fontSize: 16,
+    fontWeight: 600,
+    color: Colors.secondary,
+    marginBottom: 6,
+  },
+  addButton: {
+    backgroundColor: Colors.primary,
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  addButtonText: {
+    color: Colors.white,
+    fontWeight: 600,
+    fontSize: 16,
+  },
+  aboutTitle: {
+    fontSize: 20,
+    fontWeight: 800,
+    color: Colors.primary,
+  },
+  aboutText: {
+    fontSize: 16,
+    color: Colors.secondary,
+    marginTop: 4,
   },
 });

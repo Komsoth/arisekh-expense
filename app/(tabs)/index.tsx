@@ -1,11 +1,11 @@
-import { home } from "@/assets/styles/home";
+import { styles } from "@/assets/styles/style";
 import { categories } from "@/constand/categories";
-import { Link } from "expo-router";
 import { useState } from "react";
 import { FlatList, Pressable, ScrollView, Text, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Colors } from "@/constand/colors";
+import { getExpenses } from "@/hooks/useStorage";
 
 interface IExpense {
   id: number;
@@ -15,8 +15,8 @@ interface IExpense {
   date: string;
 }
 
-export default function HomeScreen() {
-  const [filter, setFilter] = useState(categories[0]);
+export default function styleScreen() {
+  const [filter, setFilter] = useState("ទាំងអស់");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endedDate, setEndedDate] = useState<Date | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
@@ -66,36 +66,58 @@ export default function HomeScreen() {
     },
   ]);
 
+  const filteredExpenses = expenses.filter((expense) => {
+    const matchesCategory = filter === "ទាំងអស់" || expense.category === filter;
+    const expenseDate = new Date(expense.date);
+    const matchesStartDate = !startDate || expenseDate >= startDate;
+    const matchesEndedDate = !endedDate || expenseDate <= endedDate;
+    return matchesCategory && matchesStartDate && matchesEndedDate;
+  });
+
+  const totalAmount = filteredExpenses.reduce((total, expense) => total + expense.amount, 0);
+
+  const loadExpenses = async () => {
+    // Load expenses from storage and set to state
+    const data = await getExpenses();
+    setExpenses(data);
+  };
+
   const handleClearFilterDate = () => {
     setStartDate(null);
     setEndedDate(null);
   };
   return (
-    <View style={home.container}>
-      <Text style={home.title}>ការគ្រប់គ្រងចំណាយ</Text>
-      <View style={home.card}>
-        <Text style={home.cardText}>ចំណាយសរុប</Text>
-        <Text style={home.cardTotal}>$5000.00</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>ការគ្រប់គ្រងចំណាយ</Text>
+      <View style={styles.card}>
+        <Text style={styles.cardText}>ចំណាយសរុប</Text>
+        <Text style={styles.cardTotal}>$5000.00</Text>
       </View>
 
-      <ScrollView horizontal>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+        <Pressable
+          onPress={()=> setFilter('ទាំងអស់')}
+          style={[styles.filterButton, filter == 'ទាំងអស់' && styles.activeFilter]}
+        >
+          <Text style={filter == 'ទាំងអស់' && styles.activeFilterText}>ទាំងអស់</Text>
+        </Pressable>
         {categories.map((cat, index) => (
           <Pressable
             onPress={() => setFilter(cat)}
-            style={[home.filterButton, filter == cat && home.activeFilter]}
+            style={[styles.filterButton, filter == cat && styles.activeFilter]}
             key={index}
           >
-            <Text style={filter == cat && home.activeFilterText}>{cat}</Text>
+            <Text style={filter == cat && styles.activeFilterText}>{cat}</Text>
           </Pressable>
         ))}
       </ScrollView>
 
-      <Text style={home.sectionTitle}>ប្រតិបត្តការ</Text>
-      <View style={home.filterContainer}>
+      <Text style={styles.sectionTitle}>ប្រតិបត្តការ</Text>
+      <View style={styles.filterContainer}>
         <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
           <Pressable
             onPress={() => setShowStartPicker(true)}
-            style={home.datePickerButton}
+            style={styles.datePickerButton}
           >
             <Ionicons name="calendar" size={16} color={Colors.secondary} />
             <Text>
@@ -104,7 +126,7 @@ export default function HomeScreen() {
           </Pressable>
           <Pressable
             onPress={() => setShowEndedPicker(true)}
-            style={home.datePickerButton}
+            style={styles.datePickerButton}
           >
             <Ionicons name="calendar" size={16} color={Colors.secondary} />
             <Text>
@@ -112,7 +134,7 @@ export default function HomeScreen() {
             </Text>
           </Pressable>
         </View>
-        <Pressable onPress={handleClearFilterDate} style={home.clearButton}>
+        <Pressable onPress={handleClearFilterDate} style={styles.clearButton}>
           <Ionicons name="close-circle" size={16} color={Colors.secondary} />
           <Text>លុបថ្ងៃជ្រើស</Text>
         </Pressable>
@@ -131,13 +153,13 @@ export default function HomeScreen() {
           contentContainerStyle={{ paddingBottom: 20 }}
           renderItem={({ item }: { item: IExpense }) => (
             <Pressable
-              style={home.expenseItem}
+              style={styles.expenseItem}
             >
               <View>
-                <Text style={home.expenseTitle}>{item.title}</Text>
-                <Text style={home.expenseCategory}>{item.category}</Text>
+                <Text style={styles.expenseTitle}>{item.title}</Text>
+                <Text style={styles.expenseCategory}>{item.category}</Text>
               </View>
-              <Text style={home.expenseAmount}>${item.amount.toFixed(2)}</Text>
+              <Text style={styles.expenseAmount}>${item.amount.toFixed(2)}</Text>
             </Pressable>
           )}
         />
@@ -148,6 +170,9 @@ export default function HomeScreen() {
           value={startDate || new Date()}
           mode="date"
           display="default"
+          onDismiss={() => {
+            setShowStartPicker(false)
+          }}
           onValueChange={(_, date) => {
             setShowStartPicker(false);
             if (date) {
@@ -161,6 +186,9 @@ export default function HomeScreen() {
           value={endedDate || new Date()}
           mode="date"
           display="default"
+          onDismiss={() => {
+            setShowEndedPicker(false)
+          }}
           onValueChange={(_, date) => {
             setShowEndedPicker(false);
             if (date) {
@@ -168,7 +196,8 @@ export default function HomeScreen() {
             }
           }}
         />
-      )}
+      )
+      }
     </View>
   );
 }
