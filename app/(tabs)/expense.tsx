@@ -37,7 +37,6 @@ export default function ExpenseScreen() {
         ? expenseDate.toISOString().split("T")[0]
         : new Date().toISOString().split("T")[0],
     };
-    console.log("New Expense:", newExpense);
     await saveExpense(newExpense);
     Alert.alert("ជោគជ័យ", "បានបន្ថែមចំណាយរួចរាល់");
     resetForm();

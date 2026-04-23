@@ -1,11 +1,12 @@
 import { styles } from "@/assets/styles/style";
 import { categories } from "@/constand/categories";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import { FlatList, Pressable, ScrollView, Text, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Colors } from "@/constand/colors";
 import { getExpenses } from "@/hooks/useStorage";
+import { useIsFocused } from "@react-navigation/native";
 
 interface IExpense {
   id: number;
@@ -21,85 +22,66 @@ export default function styleScreen() {
   const [endedDate, setEndedDate] = useState<Date | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndedPicker, setShowEndedPicker] = useState(false);
-  const [expenses, setExpenses] = useState<IExpense[]>([
-    {
-      id: 1,
-      title: "Hotel",
-      amount: 15,
-      category: "ការធ្វើដំណើរ",
-      date: "2026-04-01",
-    },
-    {
-      id: 2,
-      title: "Foods",
-      amount: 20,
-      category: "អាហារ",
-      date: "2026-04-01",
-    },
-    {
-      id: 3,
-      title: "Petro",
-      amount: 30,
-      category: "ការធ្វើដំណើរ",
-      date: "2026-04-01",
-    },
-    {
-      id: 4,
-      title: "Hotel",
-      amount: 20,
-      category: "ការធ្វើដំណើរ",
-      date: "2026-04-19",
-    },
-    {
-      id: 5,
-      title: "Foods",
-      amount: 30,
-      category: "ការធ្វើដំណើរ",
-      date: "2026-04-19",
-    },
-    {
-      id: 6,
-      title: "Petro",
-      amount: 25,
-      category: "ការធ្វើដំណើរ",
-      date: "2026-04-19",
-    },
-  ]);
+  const [expenses, setExpenses] = useState<IExpense[]>([]);
+  const isFocused = useIsFocused();
 
   const filteredExpenses = expenses.filter((expense) => {
     const matchesCategory = filter === "ទាំងអស់" || expense.category === filter;
-    const expenseDate = new Date(expense.date);
-    const matchesStartDate = !startDate || expenseDate >= startDate;
-    const matchesEndedDate = !endedDate || expenseDate <= endedDate;
+
+    const expenseDate = new Date(expense.date).setHours(0, 0, 0, 0);
+    const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
+    const end = endedDate ? new Date(endedDate).setHours(0, 0, 0, 0) : null;
+
+    const matchesStartDate = !start || expenseDate >= start;
+    const matchesEndedDate = !end || expenseDate <= end;
+
     return matchesCategory && matchesStartDate && matchesEndedDate;
   });
 
-  const totalAmount = filteredExpenses.reduce((total, expense) => total + expense.amount, 0);
-
-  const loadExpenses = async () => {
-    // Load expenses from storage and set to state
-    const data = await getExpenses();
-    setExpenses(data);
-  };
+  const totalAmount = filteredExpenses.reduce(
+    (total, expense) => total + expense.amount,
+    0,
+  );
 
   const handleClearFilterDate = () => {
     setStartDate(null);
     setEndedDate(null);
   };
+
+  const loadExpenses = async () => {
+    const data = await getExpenses();
+    setExpenses(data);
+  };
+
+  useEffect(() => {
+    if (isFocused) {
+      loadExpenses();
+    }
+  }, [isFocused]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>ការគ្រប់គ្រងចំណាយ</Text>
       <View style={styles.card}>
         <Text style={styles.cardText}>ចំណាយសរុប</Text>
-        <Text style={styles.cardTotal}>$5000.00</Text>
+        <Text style={styles.cardTotal}>${totalAmount.toFixed(2)}</Text>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 12 }}
+      >
         <Pressable
-          onPress={()=> setFilter('ទាំងអស់')}
-          style={[styles.filterButton, filter == 'ទាំងអស់' && styles.activeFilter]}
+          onPress={() => setFilter("ទាំងអស់")}
+          style={[
+            styles.filterButton,
+            filter == "ទាំងអស់" && styles.activeFilter,
+          ]}
         >
-          <Text style={filter == 'ទាំងអស់' && styles.activeFilterText}>ទាំងអស់</Text>
+          <Text style={filter == "ទាំងអស់" && styles.activeFilterText}>
+            ទាំងអស់
+          </Text>
         </Pressable>
         {categories.map((cat, index) => (
           <Pressable
@@ -142,7 +124,7 @@ export default function styleScreen() {
 
       <View style={{ height: 400, marginTop: 12 }}>
         <FlatList
-          data={expenses}
+          data={filteredExpenses}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
           ListEmptyComponent={
@@ -152,9 +134,7 @@ export default function styleScreen() {
           }
           contentContainerStyle={{ paddingBottom: 20 }}
           renderItem={({ item }: { item: IExpense }) => (
-            <Pressable
-              style={styles.expenseItem}
-            >
+            <Pressable style={styles.expenseItem}>
               <View>
                 <Text style={styles.expenseTitle}>{item.title}</Text>
                 <Text style={styles.expenseCategory}>{item.category}</Text>
@@ -169,35 +149,23 @@ export default function styleScreen() {
         <DateTimePicker
           value={startDate || new Date()}
           mode="date"
-          display="default"
-          onDismiss={() => {
-            setShowStartPicker(false)
-          }}
-          onValueChange={(_, date) => {
+          onChange={(event, date) => {
             setShowStartPicker(false);
-            if (date) {
-              setStartDate(date);
-            }
+            if (date) setStartDate(date);
           }}
         />
       )}
+
       {showEndedPicker && (
         <DateTimePicker
           value={endedDate || new Date()}
           mode="date"
-          display="default"
-          onDismiss={() => {
-            setShowEndedPicker(false)
-          }}
-          onValueChange={(_, date) => {
+          onChange={(event, date) => {
             setShowEndedPicker(false);
-            if (date) {
-              setEndedDate(date);
-            }
+            if (date) setEndedDate(date);
           }}
         />
-      )
-      }
+      )}
     </View>
   );
 }

@@ -3,8 +3,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const STORAGE_KEY = "expenses";
 
 export async function getExpenses() {
-  const data = await AsyncStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : [];
+  if (!AsyncStorage) {
+    console.error("AsyncStorage is null. Check native linking.");
+    return [];
+  }
+  try {
+    const data = await AsyncStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Error retrieving expenses:", error);
+    return [];
+  }
 }
 
 export async function saveExpense(data: any) {
